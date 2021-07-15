@@ -15,10 +15,13 @@ public:
         this->yf = fmax(y0, yf);
 
         this->h = fabs(h);
+        this->Nx = (this->xf - this->x0) / h;
+        this->Ny = (this->yf - this->y0) / h;
     }
 
-    void GenerateSurface(std::vector<double> &x, std::vector<double> &y, std::vector<double>& z, std::function<double(double, double)> f);
+    std::vector<double> GenerateSurface(std::vector<double> &x, std::vector<double> &y, std::function<double(double, double)> f);
+    void GenerateTrainer(std::vector<double>& x, std::vector<double>& y, std::vector<double>& z, std::function<double(double, double)> f);
 
 private:
-    double x0, xf, y0, yf, h;
+    double x0, xf, y0, yf, h, Nx, Ny;
 };
