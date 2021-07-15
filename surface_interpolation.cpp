@@ -17,7 +17,7 @@ const std::function<double(double, double)> f = [] (double x, double y) -> doubl
 
 int main()
 {
-    _2D::ExtendedBicubicInterpolator<double> interp;
+    _2D::BicubicInterpolator<double> interp;
     OctaveCodegen codegen;
 
     SurfaceGenerator traingen(x_start, x_end, y_start, y_end, h_train);
