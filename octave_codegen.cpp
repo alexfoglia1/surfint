@@ -1,6 +1,22 @@
 #include "octave_codegen.h"
 
-#include <stdio.h>
+#include <math.h>
+
+
+void OctaveCodegen::dump_matrix(std::vector<double> values, FILE* f, const char* name, const long y_size, const long x_size)
+{
+    fprintf(f,"%s = [", name);
+    for(long i = 0; i < y_size; i++)
+    {
+        fprintf(f, "[");
+        for(long j = 0; j < x_size; j++)
+        {
+            fprintf(f, "%f, ", values[i * x_size + j]);
+        }
+        fprintf(f, "];\n");
+    }
+    fprintf(f, "];\n");
+}
 
 void OctaveCodegen::GenerateCode(std::vector<double> real_values, std::vector<double> interp_values, double x_min, double x_max, double y_min, double y_max, double h)
 {
@@ -9,49 +25,29 @@ void OctaveCodegen::GenerateCode(std::vector<double> real_values, std::vector<do
     double y0 = fmin(y_min, y_max);
     double yf = fmax(y_min, y_max);
 
-    long x_size = (long) floorf(1.0 + ((x_max - x_min) / h));
-    long y_size = (long) floorf(1.0 + ((y_max - y_min) / h));
+    long x_size = (long) floorf(((x_max - x_min) / h));
+    long y_size = (long) floorf(((y_max - y_min) / h));
 
-    printf("x = linspace(%f, %f, %ld)\n", x0, xf, x_size);
-    printf("y = linspace(%f, %f, %ld)\n\n", y0, yf, y_size);
-
-    printf("real =\n[");
-    for(long i = 0; i < y_size; i++)
+    std::vector<double> err_values;
+    for (long i = 0; i < x_size * y_size; i++)
     {
-        printf("[");
-        for(long j = 0; j < x_size; j++)
-        {
-            printf("%f, ", real_values[i * x_size + j]);
-        }
-        printf("],\n");
+        err_values.push_back(fabs(real_values[i] - interp_values[i]));
     }
-    printf("];\n");
 
-    printf("interpolated =\n[");
-    for(long i = 0; i < y_size; i++)
-    {
-        printf("[");
-        for(long j = 0; j < x_size; j++)
-        {
-            printf("%f, ", interp_values[i * x_size + j]);
-        }
-        printf("],\n");
-    }
-    printf("];\n");
+    FILE* f = fopen("../script.m", "w");
 
-    printf("err =\n[");
-    for(long i = 0; i < y_size; i++)
-    {
-        printf("[");
-        for(long j = 0; j < x_size; j++)
-        {
-            double delta = real_values[i * x_size + j] - interp_values[i * x_size + j];
-            printf("%f, ", fabs(delta));
-        }
-        printf("],\n");
-    }
-    printf("];\n\n");
+    printf("Writing script... ");
 
+    fprintf(f, "x = linspace(%f, %f, %ld);\n", x0, xf, x_size);
+    fprintf(f, "y = linspace(%f, %f, %ld);\n\n", y0, yf, y_size);
 
-    printf("figure();\nsurf(x, y, real);\nfigure();\nsurf(x, y, interpolated);\nfigure();\nsurf(x, y, err);\n");
+    dump_matrix(real_values, f, "real", y_size, x_size);
+    dump_matrix(interp_values, f, "interpolated", y_size, x_size);
+    dump_matrix(err_values, f, "err", y_size, x_size);
+
+    fprintf(f, "figure();\nsurf(x, y, real);\nfigure();\nsurf(x, y, interpolated);\nfigure();\nsurf(x, y, err);\n");
+
+    fclose(f);
+
+    printf("Done!\n");
 }

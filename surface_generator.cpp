@@ -23,8 +23,8 @@ std::vector<double> SurfaceGenerator::GenerateSurface(std::vector<double>& x, st
     {
         for(long j = 0; j < x_size; j++)
         {
-            vx = x.at(j);
-            vy = y.at(i);
+            vx = x[j];
+            vy = y[i];
             double vz = f(vx, vy);
             z.push_back(vz);
         }
@@ -34,28 +34,20 @@ std::vector<double> SurfaceGenerator::GenerateSurface(std::vector<double>& x, st
 
 void SurfaceGenerator::GenerateTrainer(std::vector<double>& x, std::vector<double>& y, std::vector<double>& z, std::function<double(double, double)> f)
 {
-    int x_size = (int) floorf(1.0 + this->Nx);
-    int y_size = (int) floorf(1.0 + this->Ny);
-
-    for (int i = 0; i < y_size * x_size; i++)
-    {
-        x.push_back(0.0);
-        y.push_back(0.0);
-        z.push_back(0.0);
-    }
 
     double outer = this->y0;
-    for (int i = 0; i < y_size; i++)
+    while(outer <= this->yf)
     {
         double inner = this->x0;
-        for (int j = 0; j < x_size; j++)
+        while(inner <= this->xf)
         {
-            x[i * x_size + j] = outer;
-            y[i * x_size + j] = inner;
-            z[i * x_size + j] = f(x[i], y[i]);
+            x.push_back(outer);
+            y.push_back(inner);
+            z.push_back(f(outer, inner));
             inner += this->h;
         }
         outer += this->h;
     }
+
 }
 
